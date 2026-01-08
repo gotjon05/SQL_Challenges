@@ -1,0 +1,141 @@
+lab03
+Query Multiple Tables with Joins
+https://microsoftlearning.github.io/dp-080-Transact-SQL/Instructions/Labs/03a-joins.html
+
+Challenge 1: Generate invoice reports
+
+1. Retrieve customer orders
+As an initial step towards generating the invoice report, write a query that returns the company name from the SalesLT.Customer table, and the purchase order number and total due (calculated as the sub-total + tax + freight) from the SalesLT.SalesOrderHeader table.
+
+
+-The key shared between both tables is CustomerKey. So i pair the correct sales data with the customer 
+-Going to use JOIN because i only care about customers with sales order data 
+
+Solution: 
+SELECT
+    c.CompanyName, s.PurchaseOrderNumber, s.SubTotal + s.TaxAmt + s.Freight AS total_due
+FROM
+    SalesLT.Customer AS c
+JOIN
+    SalesLT.SalesOrderHeader AS s
+ON
+    c.CustomerID = s.CustomerID 
+
+
+2. Retrieve customer orders with addresses
+Extend your customer orders query to include the Main Office address for each customer, including the full street address, city, state or province, postal code, and country or region
+Tip: Note that each customer can have multiple addressees in the SalesLT.Address table, so the database developer has created the SalesLT.CustomerAddress table to enable a many-to-many relationship between customers and addresses. Your query will need to include both of these tables, and should filter the results so that only Main Office addresses are included.
+
+-Another inner join because I'm asked to retrieve customers orders with addresses 
+
+-SalesLT.CustomerAddress has CustomerID but it lacks the address information i need. But i can link it to SalesLT.Address table to retrieve the address information using addressID (Which did not have CustomerID preventing me from joining it directly).
+
+Solution:
+
+SELECT
+    c.CompanyName, 
+    s.PurchaseOrderNumber,
+    s.SubTotal + s.TaxAmt + s.Freight AS total_due, 
+    a.AddressLine1, 
+    a.City, 
+    a.StateProvince,
+    a.PostalCode,
+    a.CountryRegion
+FROM
+    SalesLT.Customer AS c
+JOIN
+    SalesLT.SalesOrderHeader AS s
+ON
+    c.CustomerID = s.CustomerID 
+JOIN 
+    SalesLT.CustomerAddress AS ca
+ON
+    c.CustomerID = ca.CustomerID
+JOIN 
+    SalesLT.Address AS a
+ON
+    ca.AddressID = a.AddressID
+WHERE
+    ca.AddressType = 'Main Office'
+
+
+Challenge 2: Retrieve customer data
+As you continue to work with the Adventure Works customer and sales data, you must create queries for reports that have been requested by the sales team.
+
+1. Retrieve a list of all customers and their orders
+The sales manager wants a list of all customer companies and their contacts (first name and last name), showing the purchase order number and total due for each order they have placed. Customers who have not placed any orders should be included at the bottom of the list with NULL values for the purchase order number and total due.
+
+
+I want to left join the customers table with the orders table. 
+This will give me all the customers and matching orders or NULL if they dont have an order.
+
+SELECT
+    c.CompanyName, 
+    c.FirstName,
+    c.LastName,
+    s.PurchaseOrderNumber,
+    s.SubTotal + s.TaxAmt + s.Freight AS total_due
+FROM
+    SalesLT.Customer AS c
+LEFT JOIN
+    SalesLT.SalesOrderHeader AS s
+ON
+    c.CustomerID = s.CustomerID
+ORDER BY
+    s.PurchaseOrderNumber,
+    total_due DESC;
+
+
+2. Retrieve a list of customers with no address
+A sales employee has noticed that Adventure Works does not have address information for all customers. You must write a query that returns a list of customer IDs, company names, contact names (first name and last name), and phone numbers for customers with no address stored in the database.
+
+I need all customers with no address 
+
+I need to left merge customers with address, and filter address_line1 with NULL 
+
+Confused with the customer_address and address table. customer_address is the intermediary table between customer and address. I need to join the customer address table before i can retreive the address table. And i dont know if i will lose anything by inner joining the customer_address table. OR left joining customer_address is all i need to do to find null addresses. 
+
+Customer table alone has 847 rows. When i JOIN with CustomerAddress it decreases to 417. This tells me that 440 customer records dont have addresses. And left joining CustomerAddress is all i need to do to find NULLS  
+
+And with this solution, i get my 440
+
+SOLUTION 
+
+SELECT
+    c.CustomerID,
+    c.CompanyName,
+    c.FirstName,
+    c.LastName,
+    c.Phone
+FROM
+    SalesLT.Customer AS c
+LEFT JOIN  
+    SalesLT.CustomerAddress AS ca
+ON
+    c.CustomerID = ca.CustomerID
+WHERE
+    ca.AddressID IS NULL 
+
+Challenge 3: Create a product catalog
+The marketing team has asked you to retrieve data for a new product catalog.
+
+Retrieve product information by category
+The product catalog will list products by parent category and subcategory, so you must write a query that retrieves the parent category name, subcategory name, and product name fields for the catalog.
+
+This Self-Join, taught me that ON clause can pair different sides of the same table 
+
+
+SELECT
+    parentcat.Name AS ProductCategory_name,
+    subcat.Name AS subcategory_name,
+    product.Name
+FROM
+    SalesLT.ProductCategory AS parentcat
+JOIN
+    SalesLT.ProductCategory AS subcat
+ON
+    subcat.ParentProductCategoryID = parentcat.ProductCategoryID
+JOIN
+    SalesLT.Product AS Product
+ON
+    subcat.ProductCategoryID = Product.ProductCategoryID

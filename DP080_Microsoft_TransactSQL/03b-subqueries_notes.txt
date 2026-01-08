@@ -1,0 +1,18 @@
+
+inner query = subquery that is nested
+outer query = main query
+
+Scalar subqueries vs Multi-valued subqueries
+    Scalar
+        -returns only one value
+        -might be used anywhere in an outer query statement 
+    multivalued
+        -multivalued return result like single table and outer query must return more than one value 
+
+
+Self-contained subqueries vs Correlated subqueries
+    Self Contained 
+        -no dependencies on the outer query
+    Correlated 
+        -reference one or more columns from the outer query and therefore depend on it
+        -run multiple times, once per row 

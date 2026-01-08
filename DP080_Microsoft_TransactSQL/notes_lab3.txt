@@ -1,0 +1,21 @@
+
+SQL Declarative Language: user describes what they want, database engine decides decides actual execution for best optimization 
+
+relational database: data is organized in multiple tables, with distinct data,  related to one another using key columns
+
+Set theory: collection of distinct objects containing zero or more members of the same type.  
+    -think of the results as sets, and conceptualize the join results as a Venn diagram
+
+ Cartesian products: Every element in one set is combined with every element in the other set
+    -combining every row in one table to every row of another table.
+    -Cartesian product not desirable, usually when tables are joined without considering relationships. all combination of rows not typicaly useful 
+    -JOIN starts as a cartesian product but ON and WHERE, prevent this 
+
+normalized design: Relational databases, useful for minimizing duplication of data
+
+TSQL Virtual Tables:
+    -FROM clause, first clause to be processed, creates the virtual table 
+    -logical entity only, not a physical table 
+
+Self Joins 
+    
